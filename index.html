@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Tracker</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#dashboard">
+            <i class="fas fa-film me-2"></i>Movie Tracker
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#watchlist">Watchlist</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#watched">Watched</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#add-movie">Add Movie</a>
+                </li>
+            </ul>
+            <div class="d-flex">
+                <div id="user-info" class="d-none">
+                    <span class="navbar-text me-3">
+                        Welcome, <span id="username-display">User</span>
+                    </span>
+                    <button id="logout-btn" class="btn btn-outline-danger btn-sm">Logout</button>
+                </div>
+                <div id="login-register-buttons">
+                    <button class="btn btn-outline-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content Container -->
+<div class="container mt-4 mb-5">
+    <!-- Views will be dynamically inserted here -->
+    <div id="view-container"></div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Login</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="mb-3">
+                        <label for="login-username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="login-username" required>
+                    </div>
+                    <div class="alert alert-danger d-none" id="login-error"></div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Register Modal -->
+<div class="modal fade" id="registerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="register-form">
+                    <div class="mb-3">
+                        <label for="register-username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="register-username" required>
+                    </div>
+                    <div class="alert alert-danger d-none" id="register-error"></div>
+                    <button type="submit" class="btn btn-primary w-100">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mark as Watched Modal -->
+<div class="modal fade" id="movieActionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="movie-action-title">Mark as Watched</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="movie-action-id">
+
+                <form id="watched-form">
+                    <div class="mb-3">
+                        <label class="form-label">Rating (Optional)</label>
+                        <div class="star-rating">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                            <input type="hidden" id="movie-rating" value="0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date-watched" class="form-label">Date Watched</label>
+                        <input type="date" class="form-control" id="date-watched" value="">
+                    </div>
+                    <div class="mb-3">
+                        <label for="movie-notes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="movie-notes" rows="3"></textarea>
+                    </div>
+                    <div class="alert alert-danger d-none" id="watched-error"></div>
+                    <button type="submit" class="btn btn-success w-100">Save as Watched</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div id="loading-spinner" class="d-none">
+    <div class="spinner-backdrop"></div>
+    <div class="spinner-container">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast-notification" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto" id="toast-title">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toast-message"></div>
+    </div>
+</div>
+
+<!-- View Templates -->
+<!-- Dashboard View -->
+<template id="dashboard-template">
+    <div class="dashboard-view">
+        <h1 class="mb-4">Your Movie Dashboard</h1>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="stat-value" id="watchlist-count">0</div>
+                    <div class="stat-label">In Watchlist</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="stat-value" id="watched-count">0</div>
+                    <div class="stat-label">Movies Watched</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Watchlist preview - prominently featured -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Your Watchlist</h5>
+                <div>
+                    <a href="#add-movie" class="btn btn-sm btn-primary me-2">
+                        <i class="fas fa-plus me-1"></i>Add Movie
+                    </a>
+                    <a href="#watchlist" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="watchlist-preview" class="row g-4">
+                    <div class="col-12 text-center py-4">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Genre distribution chart -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Movies by Genre</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="genres-chart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recently watched -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Recently Watched</h5>
+                        <a href="#watched" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div id="recent-movies">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-secondary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Movie Detail View -->
+<template id="movie-detail-template">
+    <div class="movie-detail-view">
+        <div class="mb-4">
+            <a href="#movies" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> Back to Movies
+            </a>
+        </div>
+
+        <div class="row">
+            <!-- Movie Info Section -->
+            <div class="col-md-8">
+                <h1 id="movie-title">Movie Title</h1>
+                <div class="movie-meta">
+                    <span id="movie-year" class="me-3">Year</span>
+                    <span id="movie-director" class="me-3">Director</span>
+                    <div id="movie-genres" class="genre-pills"></div>
+                </div>
+
+                <p id="movie-description" class="movie-description mt-3">Description goes here.</p>
+
+                <div id="user-actions" class="mb-4">
+                    <button id="movie-action-btn" class="btn btn-primary me-2">
+                        <i class="fas fa-plus me-1"></i> Add to Your Lists
+                    </button>
+                    <button id="delete-movie-btn" class="btn btn-outline-danger d-none">
+                        <i class="fas fa-trash me-1"></i> Delete Movie
+                    </button>
+                </div>
+
+                <div id="user-status" class="mb-4 d-none">
+                    <div class="alert alert-info watchlist-status d-none">
+                        <i class="fas fa-bookmark me-2"></i> This movie is in your watchlist
+                        <button class="btn btn-sm btn-outline-danger ms-2 remove-watchlist-btn">Remove</button>
+                    </div>
+                    <div class="alert alert-success watched-status d-none">
+                        <i class="fas fa-check-circle me-2"></i> You've watched this movie
+                        <div class="mt-2" id="watched-details"></div>
+                        <button class="btn btn-sm btn-outline-danger ms-2 remove-watched-btn">Remove</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Movie Poster Section -->
+            <div class="col-md-4">
+                <div class="movie-poster">
+                    <img id="movie-poster" src="/api/placeholder/400/600" alt="Movie poster" class="img-fluid rounded">
+                    <div class="poster-info mt-2">
+                        <span class="text-muted">Added by <span id="movie-added-by">Username</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Watchlist View -->
+<template id="watchlist-template">
+    <div class="watchlist-view">
+        <h1 class="mb-4">Your Watchlist</h1>
+
+        <div class="mb-4">
+            <a href="#add-movie" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add Movie to Watchlist
+            </a>
+        </div>
+
+        <div id="watchlist-container" class="row g-4">
+            <!-- Watchlist items will be inserted here -->
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-secondary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Watched Movies View -->
+<template id="watched-template">
+    <div class="watched-view">
+        <h1 class="mb-4">Movies You've Watched</h1>
+
+        <div id="watched-container" class="row g-4">
+            <!-- Watched movies will be inserted here -->
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-secondary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Add Movie View -->
+<template id="add-movie-template">
+    <div class="add-movie-view">
+        <h1 class="mb-4">Add Movie to Watchlist</h1>
+
+        <div class="alert alert-info mb-4">
+            <i class="fas fa-info-circle me-2"></i>
+            Movies you add will automatically be placed in your watchlist.
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form id="add-movie-form">
+                    <div class="mb-3">
+                        <label for="movie-title" class="form-label">Title*</label>
+                        <input type="text" class="form-control" id="movie-title" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="movie-director" class="form-label">Director*</label>
+                            <input type="text" class="form-control" id="movie-director" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="movie-year" class="form-label">Release Year*</label>
+                            <input type="number" class="form-control" id="movie-year" min="1888" max="2099" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="movie-genres" class="form-label">Genres* (comma separated)</label>
+                        <input type="text" class="form-control" id="movie-genres" placeholder="Action, Drama, Sci-Fi" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="movie-description" class="form-label">Description*</label>
+                        <textarea class="form-control" id="movie-description" rows="3" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="movie-cover" class="form-label">Movie Poster URL (optional)</label>
+                        <input type="url" class="form-control" id="movie-cover" placeholder="https://example.com/poster.jpg">
+                    </div>
+
+                    <div class="alert alert-danger d-none" id="add-movie-error"></div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Add to Watchlist</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- 404 Not Found View -->
+<template id="not-found-template">
+    <div class="not-found-view text-center py-5">
+        <h1 class="display-1">404</h1>
+        <h2 class="mb-4">Page Not Found</h2>
+        <p class="lead mb-4">The page you are looking for does not exist.</p>
+        <a href="#dashboard" class="btn btn-primary">Go to Dashboard</a>
+    </div>
+</template>
+
+<!-- Bootstrap JS Bundle (includes Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Main Application JS -->
+<script src="app.js"></script>
+</body>
+</html>
