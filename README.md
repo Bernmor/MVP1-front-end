@@ -18,7 +18,7 @@ O Movie Dashboard é um aplicativo client-side que permite aos usuários navegar
 
 1. **Clone o repositório**
    ```bash
-   git clone https://github.com/Bernmor/MVP1-front-end
+   git clone https://github.com/Bernmor/MVP1-front-end.git
    cd movie-dashboard-frontend
    ```
 
